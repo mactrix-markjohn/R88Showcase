@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>3D Model Viewer</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://unpkg.com/focus-visible@5.0.2/dist/focus-visible.js" defer></script>
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <style>
+        /* Previous styles remain the same */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            position: relative;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-right: 1px solid #ddd;
+            transition: transform 0.3s ease;
+            /* overflow: hidden; */
+            overflow-y: auto;
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* .model-list {
+            list-style: none;
+        } */
+
+        .model-list {
+            max-height: calc(100vh - 200px); /* Set a maximum height for the list */
+            overflow-y: auto; /* Enable vertical scrolling */
+            /*border: 1px solid #ccc;  Optional: Add a border for better visibility */
+            /* padding: 10px; Optional: Add padding */
+        }
+        
+
+        .model-list li {
+            list-style-type: none; /* Remove default list styling */
+        }
+
+        .model-button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: left;
+            transition: background-color 0.2s;
+        }
+
+        .model-button:hover {
+            background-color: #e9e9e9;
+        }
+
+        .model-button.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+        }
+
+        .model-container {
+            display: none;
+        }
+
+        .model-container.active {
+            display: block;
+        }
+
+        model-viewer {
+            width: 100%;
+            height: 500px;
+            background-color: #fafafa;
+        }
+
+        .model-title {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: -250px;
+                top: 0;
+                bottom: 0;
+                z-index: 999;
+                height: 100vh;
+                /* overflow: hidden; */
+                overflow-y: auto;
+            }
+
+            .sidebar.active {
+                transform: translateX(250px);
+            }
+
+            .sidebar.active+.main-content .menu-toggle {
+                display: none;
+            }
+
+            .main-content {
+                margin-top: 60px;
+            }
+
+            model-viewer {
+                height: 400px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            model-viewer {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="overlay"></div>
+    <div class="sidebar">
+        <h2 style="margin-bottom: 20px;">Models</h2>
+        <ul class="model-list">
+            <li>
+                <button class="model-button active" data-model="model1">
+                    R88 Helicopter
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <button class="menu-toggle">☰ Menu</button>
+        <div id="model1" class="model-container active">
+            <h2 class="model-title">R88 Helicopter</h2>
+            <model-viewer src="./public/R88/R88_REMESHED.glb"
+                ios-src="./public/R88/R88_REMESHED.usdz"
+                poster="./public/R88/r88.png"
+                alt="R88 Helicopter" shadow-intensity="1" camera-controls auto-rotate ar
+                tone-mapping="neutral" exposure="2" scale="0.3 0.3 0.3" ar-scale="auto">
+            </model-viewer>
+        </div>
+        
+        <!-- </model-viewer> -->
+        <!-- div -->
+        <!-- ios-src="./public/Power_Tilt_Dual_Wheel_30K/TXP_PowerTilt-Gooseneck-Dual Wheel-8x25_30Kusdz.usdz" -->
+
+       
+        </div>
+    </div>
+
+    <script>
+        const menuToggle = document.querySelector('.menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.overlay');
+
+        function closeSidebar() {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        });
+
+        overlay.addEventListener('click', closeSidebar);
+
+        document.querySelectorAll('.model-button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.model-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelectorAll('.model-container').forEach(container => {
+                    container.classList.remove('active');
+                });
+
+                button.classList.add('active');
+                const modelId = button.getAttribute('data-model');
+                document.getElementById(modelId).classList.add('active');
+
+                if (window.innerWidth <= 768) {
+                    closeSidebar();
+                }
+            });
+        });
+        document.querySelector('.sidebar').addEventListener('touchmove', function(event) {
+    // Allow scrolling
+        }, { passive: true }); // Use passive event listener for better performance
+    </script>
+</body>
+
+</html>
